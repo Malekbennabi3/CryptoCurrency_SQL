@@ -1,0 +1,540 @@
+%! Author = HP
+%! Date = 18/04/2024
+\documentclass[10pt]{article}
+
+\usepackage{lipsum} % This package generates dummy text.
+\usepackage{multicol} % This package is used to create multiple columns.
+\usepackage[margin=0.5in]{geometry} % This package is used to adjust the document margins.
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+
+
+\begin{document}
+
+\title{\textbf{Utilisation of Time Series Data for Forecasting Oil Temperature and Countries Exchange Rates}}
+\author{\textbf{BENNABI Malek Mohamed} \\ Université Paris Cité}
+\date{\today}
+
+
+\maketitle
+
+\begin{mdframed}[backgroundcolor=gray!20] % This adds a grey background to the abstract.
+\begin{abstract}
+
+\noindent\makebox[\linewidth]{\rule{\textwidth}{1pt}}
+In this paper, we harness the power of time series data to forecast two critical parameters: oil temperature and exchange rates. Our research is grounded in the analysis of electricity consumption patterns, which serve as a rich source of time series data. We employ machine learning techniques to identify patterns and trends in this data, which are then used to predict oil temperature and exchange rates.
+
+Our approach involves forcasting the Oil temperature within the Electricity Transformer Temperature data. We also conduct a comparative analysis of different forecasting methods on the Exchange rates data, discussing their respective merits and drawbacks.\newline
+\noindent\makebox[\linewidth]{\rule{\textwidth}{1pt}}
+
+\end{abstract}
+\end{mdframed}
+
+\vspace{0.5cm} % This adds more space between the abstract and the next sections.
+
+\begin{multicols}{2}
+
+\section{Introduction}
+Time series forecasting is the process of predicting future behavior using past signal correlations.
+Over the past decade, it has emerged as a significant area of study for both practitioners in the industry and academic researchers.\newline
+Numerous algorithms have been examined using variety of techniques, such as machine learning and deep learning methods (LSTM, RNN).  \cite{c1} \cite{c2}
+\newline
+Nowadays, this learning problem is widespread in real-world applications where different observations are collected sequentially, such as medical data, electricity consumption temperatures or stock prices, hence the need to anticipate future changes, such as a fall in the exchange rate or a sudden rise in temperature, in order to remedy these perturbations and envisage appropriate solutions.
+
+\vspace{2pt}
+This project is divided into two parts:
+
+
+\begin{itemize}
+
+    \item The first part is to provide a solution to the univariate forecasting problem of predicting the next 100 values of the OT variable for the ETTh1 dataset.
+
+    \item The second part is aimed at finding a solution to the multivariate forecasting problem of predicting the next 100 values of the '6' variable of the exchange rate dataset, while dealing with the missing values.
+
+\end{itemize}
+
+
+\section{Oil Temperature forecast}
+The first step is to train a predictor to accurately predict the next 100 values, which is a simple univariate prediction problem.
+To do this, we'll need to preprocess the data and split the dataset into a subset of subsequences of the form (input, target) for training.
+The training data consists of a univariate time series with 1 feature.
+For this method, we will explain the techniques and their results.
+\newline We will also give a brief overview of the preprocessing steps we performed.
+
+
+\subsection{Prophet approch}
+Prophet is a predictive tool developed by Facebook in 2017. It's designed to analyze time series that show patterns on different time scales, such as annually, weekly and daily.
+\newline It also has advanced capabilities to handle the holiday effect, which is a very important factor in many practical cases. \cite{c2}
+
+Here’s a high-level overview of how Prophet works:
+The Trend Model in Prophet attempts to fit the data into a piecewise linear or logistic growth curve trend. This allows the model to handle non-linear growths by introducing change points at which the rate is allowed to change.\newline
+The Seasonality Model in Prophet is modelled using Fourier series. By default, Prophet will model seasonality with a period of one week and one year, but this can be set to other periods.\newline
+Holiday Effect: The user may provide Prophet with a list of dates that represent holidays or special events. Prophet will include these dates as additional regressors in its model.
+\newline Error Model: The error term is assumed to be normally distributed.
+The data is divided into a training set (80\% of the data) and a testing set (the remaining 20\%).\newline
+A Prophet model is created and fitted to the training data. The script then adjusts the predicted values by fitting a quadratic function to the data and generating new y values using this function. These new y values are then assigned back to the ‘yhat’ column in the forecast DataFrame.
+The script then saves the adjusted predictions and the original predictions to CSV files.
+\end{multicols}
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1\textwidth]{OT_Plot.png}
+\caption{Overview of the OT dataset distribution}
+\label{f1}
+\end{figure}
+
+
+
+\begin{multicols}{2}
+
+\subsection{Related works}
+The Prophet model is a statistical model. It employs past data to infer future trends, yet it lacks an understanding of the underlying process that generates the data. Consequently, its predictions are probabilistic, encompassing uncertainty intervals.
+\newline The Prophet model is particularly useful for business forecasting tasks due to its ability to generate forecasts in a relatively short timeframe, and its simplicity does not require a high level of familiarity with time-series data.
+\newline There are numerous related works that have explored different aspects of this technique. Taylor SJ and Letham B. \cite{c3} employed a decomposable time series model comprising three main components: trend, seasonality, and holidays. \newline
+Meng, J, Yang, X, Yang, C and Liu, Y \cite{c7} conducted a deeply comparative experiment on the LSTM and the Prophet model on pharmaceutical sales prediction.
+
+\vspace{3pt}
+This is a brief summary of the research conducted on this model and the time series classification. It is an suitable introduction for anyone interested in this field of study.
+
+
+
+\subsection{Dataset and Pre-processing}
+On a selectionne las 15 monnaies les plus echangees aujourd\'hui et on a extrait les differentes donnees historiques de chaque monnaie via Yahoo finance, comme ces differentes monnaies n'ont pas ete creees en meme temps on a pris un interval commun entre ces differentes monnaies qui est (23/12/2020- 24/04/2024)\newline The 'OT' values are distributed between -4.08 and 46.007, with a mean of 13.352. The majority of the dataset is represented by the value of 18.15, which is the 75th percentile.
+on a telecharge ces donnees dans le format csv et on a nettoye les donnees pour ne pas avoir de valeurs manquantes et on a crees une base de donnees relationnelle en utilisant MySql et Xampp.
+
+ainsi on a obtenu 15 tables sql avec chacune une clef primaire qui est la date comme ca on pourra avoir une clef etrangere dans les autres monnaies et pour chaque table on a 4 colonnes open, close, high, low, volume.
+on appelle ca le format (OHLC+) (Citer la feuille de Daniel).
+Lutilisation d'un bdd SQL nous permettra d'avoir des donnees bien organises qu'on peut manipuler en utilisant des requetes sql dans un programe python avec mysql.connector.
+
+On peut essayer quelques requetes pour visualiser notre bdd sql.
+
+(Ajoutrer des images du resultat de ces requetes)
+
+Ensuite on ecrit des requetes sql pour extraire les differents donnees de notre bdd et de les mettre sous le format dataframe de pandas pour pouvoir les ajouter a notre modele LSTM qu'on va utiliser pour predire les valeurs futures de chaque monnaie.
+
+on va ainsi essayer un LSTM avec un model Keras entraine sur 100 epochs et on repete le meme entrainement sur les autres monnaies.
+(On va aussi envisager d'essayer une approche multivariable des differentes monnaies et on va evidement calculer la correlation entre ces differentes monnaies)
+
+On affiche les plots precedents.
+
+On calcule la moyenne absolue d'erreur MAE et on essaye avec plusieurs Epochs et plusieurs monnaies.
+
+on peut egalement envisager deprevoir les futures valeurs d'une monnaie en utilisant un modele entraine sur une autre monnaie (Par exemple on peut predire les valeurs futures du Bitcoin en utilisant un modele entraine sur la monnaie ETH)
+
+on repete cette meme procedure sur l'ensemble des monnaies.
+
+On compare le graph des monnaies depuis leurs creation jusqu'a aujourd'hui pour voir si les tendences de chaque monnaie est pareille durant toute sa duree de vie (hausse puis baisse puis hausse puis stabilisation)
+
+On peut calculer le score F1 et les differents facteurs entre les monnaies pour avoir une idee de la similarite entre les differentes tables.
+
+afficher les standard deviation et les pourcentilles.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.22\textwidth]{image_split.png}
+\caption{Distribution of the Train/Test sets}
+\label{f2}
+\end{figure}
+
+
+\subsection{Training}
+
+On peut jouer sur les parametres d'entrainement du modele Keras et le LSTM comme le nombre d'epochs et la largeur du Batch, on essaiera le meme modele sur des splits 80/20, 60/40, 90/10.
+Si les predictions sont superieures aux valeurs precedentes alors SELL, s'ils sont inferieures alors BUY, si elles sont legerement differentes (on donne une petite marge d'erreur) alors on HOLD.
+Ainsi on peut garder notre benefice sans avoir a acheter ou a vendre.
+
+On essayera nos estimations sur 3, 5 et 7 jours pour ne pas perdre en precision de predictions.
+
+on repete ca avec les autres monnaies et on compare le graph des predictions et on peut tirer des conclusions (Par rapport a la similitude entre les differents plots ou entre les evenements reels comme la guerre d'Ukraine ou Israel).
+
+
+
+
+We can also obtain plots of the different patterns (Figure\ref{f4}) with the command $$model.plot\_components(forecast)$$ .
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{plot_comp.png}
+\caption{Plot of components}
+\label{f4}
+\end{figure}
+
+After running the model's training on the train set we can now define the desired time interval and the frequency (Hourly in our example) for predicting the 100 future values (until 28/06/2018 -17420 time series in total). \newline
+To do this we use the command: $$model.make\_future\_dataframe(periods=100, freq='H')$$
+
+After extracting the predicted values we can plot the whole result with matplotlib (Figure \ref{f5}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{img_predict.png}
+\caption{Plot of the future predictions}
+\label{f5}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{img_head.png}
+\caption{Example of the Tendencies}
+\label{f3}
+\end{figure}
+\subsection{Indicateurs}
+On doit calculer des indicateurs utilises en commerce et en finance pour prevoir les monnaies en plus des OHLC+, on va les decrire
+indic1
+indic2
+indic3
+indic4
+
+
+To evaluate this solution's performance we used the MAE (Mean Absolute Error)
+metric:
+$$MAE= \frac{1}{N} \sum_{i=0}^{N}  \left | Y_i-f(X_i) \right |$$
+The scores obtained on the train/test sets and Kaggle submission were mae\_tt=0.7122 and mae\_f=0.8912, respectively.
+
+\vspace{5pt}
+
+\subsection{Problemes}
+Le probleme avec le marche des crypto monnaies c'est qu'il est volatile et change quasi instantanement donc le defi majeur serait d'avoir des donnees chaque minute ce qui va generer un anorme taux d'informations qui va rapidement
+devenir hors de control, ainsi dans une semaine pour une seule monnaie on aura (10 080 donnees en collectant ces donnees pendant 5 ans on depassera les 2 419 200 donnees ce
+qui equivaut a 200Mb par fichier )
+In addition, the dataset and data pre-processing steps were discussed. Finally, the training parameters of the model were presented.\newline
+ This section provides a comprehensive overview of the methods used for OT values forecast and the steps taken to prepare the data for training the Prophet model.\newline
+Although this model does not produce outstanding results, it is easy to deploy and can be implemented quickly.
+
+\newpage
+\section{Exchange Rate prediction}
+In this second part of the project, we're going to provide a solution to tackle the forecasting problem, to forecast the next 100 values of the '6' variable for the exchange rate dataset while handling the missing values.
+
+\subsection{Related works}
+There are numerous methodologies for performing multivariate forecasting. Two prominent examples are the RNN (Recurrent Neural Network) and the LSTM (Long Short-Term Memory) approach, as illustrated in the A. Sagheer, M. Kotb article \cite{c8}. In this study, the authors employed deep LSTM recurrent networks to predict petroleum production. Additionally, the combination of Prophet or Neural Prophet with a regressor enables the prediction of variables based on numerous inputs, as demonstrated in the Oskar.T,1,H.Hewamalagec, Polina P, N.Laptevb C.Bergmeirc study \cite{c9}, which compared the two previously mentioned models. Furthermore, the article JAGANNATHAN.J, DIVYA, C \cite{c10} presents an example of multivariate Prophet being used to predict climate change.
+
+
+
+
+
+\subsection{Dataset and Pre-processing}
+
+In order to achieve our objective, we have constructed a dataset comprising 7489 daily currency exchange rate time series, each of which represents a different data point (columns [0-6] and OT). However, 25\% of the data is missing (33283 missing values out of the original 59912). \newline
+The following table shows the head of the original table.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{original.png}
+\caption{Exchange Rate with missing values}
+\label{f6}
+\end{figure}
+
+In order to overcome the problem of missing values, three methods of completion were tried:
+
+\begin{itemize}
+    \item Mean Completion: Each of the missing values are replaced with the mean of the column df.fillna(df.mean())
+    \item Median Completion: The missing values are replaced with the mean of the column. df.fillna(df.median())
+    \item Interpolation Completion: The missing values are filled based on a second order (quadratic) polynomial interpolation.
+    df.interpolate(method='polynomial', order=2).fillna(method='ffill'), we used the second degree polynom to avoid data overfitting.
+
+\end{itemize}
+
+We obtained the three following results(Figure \ref{f7}, \ref{f8} and \ref{f9})
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{f_mean.png}
+\caption{Mean Completion}
+\label{f7}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{f_med.png}
+\caption{Median Completion}
+\label{f8}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{f_interpolate.png}
+\caption{Interpolation Completion}
+\label{f9}
+\end{figure}
+
+
+
+\subsection{Experiments}
+
+In order to address the problem, three different approaches were tested:
+\begin{enumerate}
+    \item Univariate Prophet : We Applied the Step A method on this problem, and we tested it on the three completed version of the dataset(Figure \ref{f10}, \ref{f11}, \ref{f12})
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{c_mean.png}
+\caption{Data distribution mean completion}
+\label{f10}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{c_med.png}
+\caption{Data distribution median completion}
+\label{f11}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{c_interpol.png}
+\caption{Data distribution interpolation completion}
+\label{f12}
+\end{figure}
+
+The two columns, previously designated as 'date' and '6', were renamed as 'ds' and 'y', respectively. The dataset was then divided into two distinct sets, 80\% of which constituted the training set and 20\% the test set. This resulted in a total of 5990 instances in the training set and 1498 instances in the test set. \newline
+The training set was then fitted into the Prophet model, resulting in the prediction of the figure \ref{f13} and \ref{f14} .
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{img_pred.png}
+\caption{Predictions using univariate Prophet model}
+\label{f13}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{p_pred.png}
+\caption{Predictions using interpolation completion and Prophet}
+\label{f14}
+\end{figure}
+
+\item LSTM (Long Short-Term Memory): Once the dataset had been completed by the preceding techniques, we proceeded to analyse the '6' column.\newline
+In order to ensure that the values were within the appropriate range for LSTM models, we applied a MinMax scaler to manipulate them between 0 and 1. In order to avoid having imbalanced sets, we then split the data into 65\% Train and 35\% Test.
+Subsequently, the input was reshaped to a format of [samples, time steps, features], which is the requisite format for LSTM.\newline The Sequential model was then created using Keras, which is a type of Recurrent Neural Network (RNN) that employs Long Short-Term Memory (LSTM) units, which are a specialised form of RNN unit that is effective for dealing with long-term dependencies in sequence data.\newline
+We executed the command $model.summary()$ to obtain our model's architecture (Figure \ref{f15}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{arch.png}
+\caption{The Model's architecture}
+\label{f15}
+\end{figure}
+The data was then incorporated into the Keras model and training was initiated for 20 epochs with a batch size of 64.\newline
+The model's performance (Loss function \cite{c11}) was evaluated after each epoch.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{keras.png}
+\caption{Keras model's performance after every epoch }
+\label{f16}
+\end{figure}
+
+Subsequently, the model's prediction (Blue) was displayed on the train (Orange) and test (Green) sets of the 100 most recent values (Figure \ref{f17}).
+
+Finally, an inverse transform was applied in order to eliminate the data scaling, resulting in the plot of the predicted values (Figure \ref{f18}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{lstm_pred.png}
+\caption{Model's prediction on train and test sets}
+\label{f17}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{pred1.png}
+\caption{LSTM model's prediction }
+\label{f18}
+\end{figure}
+
+The same methodology was employed on the other completed datasets (mean and median), the results of which will be discussed later.
+
+\item Multivariate Prophet : Now, we employed the previously cited prophet model in a multivariate approach.\newline
+The dataset, which had been completed by the interpolation method, was imported and the start and end dates of the training and testing sets were defined. (Figure \ref{f19}).
+
+We plotted the different data distribution on the same figure to observe the relation between the variables visually (Figure \ref{f20}).\newline
+ Then we rename the date and the '6' column to 'ds' and 'y' and we select the relevant columns (Figure \ref{f21}),
+
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{img_inter.png}
+\caption{Head of completed dataset }
+\label{f19}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{img_ren.png}
+\caption{Relevant columns}
+\label{f21}
+\end{figure}
+
+\end{multicols}
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=1.0\textwidth, height=0.35\textwidth]{plot_inter.png}
+\caption{Dataset distribution}
+\label{f20}
+\end{figure}
+
+
+\newpage
+\begin{multicols}{2}
+
+And to understand the relation between the different variables we calculated the correlation between each variable and the '6' variable (Figure \ref{f22})
+
+\begin{figure}[H]
+\includegraphics[width=0.45\textwidth]{corr.png}
+    \caption{Correlation between variables}
+\label{f22}
+\end{figure}
+
+We notice that the best matching variables are the '3', 'OT' and '0'.\newline
+These values are close to 1, indicating that there is a high correlation between the three columns and the '6' column.
+
+We fitted the train/test sets into the Prophet model and we initiated the training process, then we defined a forecast time range of 100 and we plotted the forecast and the components chart.(Figure \ref{f23} and \ref{f24}). \newline
+In the forecast graphic, the light blue chart represents the uncertainity interval and the black dots represents the real values.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{proph.png}
+\caption{Forecast plot visualisation}
+\label{f23}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{f1.png}
+\caption{Forecasting components}
+\label{f24}
+\end{figure}
+
+By adding the weekly and the yearly seasonality to our initial baseline model, we displayed the 100 future predicted values and we plotted a second time the components (Figure \ref{f25}).
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{f2.png}
+\caption{Future forecasting components}
+\label{f25}
+\end{figure}
+
+We observe that the yearly and the weekly tendencies didn't change very much from our baseline model components. However, the trend exhibited a notable change when the future prediction period was extended.
+
+Finally, in order to enhance the predictive capabilities of our model, we incorporated an additional regressor comprising the columns '0', '3' and 'OT'. We standardised the input values within the regressor and tested the model's predictions for the subsequent 100 values on each case.
+
+
+\subsection{Results}
+
+To summarize the previous experiments, we have collected all the results in the table .\newline
+It is worth noting that the use of other correlated variables enhances the accuracy of our prediction, but we should also be careful to not use too many variables to avoid every column's estimation error (More columns=more error per column).\newline
+In our case, the optimal combination was the second-degree interpolation completion of the initial dataset and the use of the values of the column '3' to estimate the future values of the column '6'.\newline
+This approach yielded an mean absolute error of 0.0134.
+
+
+
+\subsection{Conclusion}
+In this section, we have presented the methodology that we have tested for forecasting the next values of the time series. In detail, we have explained the three models that were used. Additionally, we have provided a brief overview of related work and some of the research focused on LSTM and multivariate prophet methods in recent years. Furthermore, we have discussed the dataset and data pre-processing steps. Finally, we have provided details of the training parameters of the model.
+Furthermore, it should be noted that there are other methods of completing missing values that have not been discussed in this section(for example, the completion of missing data using association rules). The primary objective in this report was to identify a model that produces acceptable results and is both fast and easy to implement.
+
+\section{Summary}
+In conclusion, the two sections discuss different methods for forecasting future values from past time series data. The first section presents the univariate prophet method, which is a statistical technique that uses tendency and seasonality to predict certain patterns or motifs in the data. Although this method is fast and simple to implement, it can be less precise to determine the appropriate values if the dataset's size were voluminous. \newline
+Conversely, the second section presents three distinct models for performing multivariate prediction from exchange rates data. The third model outperforms the first and second models in precision and in execution time.\newline
+The results of the two sections are encouraging the establishment of a data monitoring system, whether to track the temperature of the oil or to monitor the exchange rate, with the objective of anticipating potential disruptions and implementing proactive repair measures.
+
+\end{multicols}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Approach} & \textbf{Completion} & \textbf{Mae} & \textbf{Columns used} \\
+\hline
+Univariate & Prophet & Mean & 0.3419 & / \\
+\cline{3-5}
+ &  & Median & 0.3483 & / \\
+\cline{3-5}
+ &  & Interpolation & \textbf{0.3292} & /  \\
+\cline{2-5}
+ & LSTM & Mean & 0.0440 & / \\
+\cline{3-5}
+ & & Median & 0.0633 & / \\
+\cline{3-5}
+ &  & Interpolation & \textbf{0.0357} & / \\
+\hline
+
+Multivariate & Prophet & Median & 0.1010 & / \\
+\cline{3-5}
+ &  & Interpolation & \textbf{0.0134} & '3' \\
+ &  &  & 0.0226 & '0' and 'OT' \\
+ &  &  & 0.0228 & 'OT' \\
+ &  &  & 0.0223 & '0' and '3' \\
+ &  &  & 0.0197 & '3' and 'OT' \\
+ &  &  & 0.0240 & '3' and '0' and 'OT' \\
+\hline
+
+\end{tabular}
+\caption{Summary of the previous experiments result}
+\label{t1}
+\end{table}
+
+
+\begin{multicols}{2}
+
+\begin{thebibliography}{2}
+{\tiny
+\bibitem{c1}
+Makridakis, Spyros. Time series prediction: Forecasting the future and understanding the past. International Journal of Forecasting. 1994.
+
+\bibitem{c2}
+TOWARDS DATA SCIENCE. Time Series Analysis in Python: An Introduction. 2018. [consulted on 01/04/2024]. https://towardsdatascience.com/time-series-analysis-in-python-an-introduction-70d5a5b1d52a
+
+\bibitem{c3}
+MEDIUM. Prophet. 2020. Available at: https://medium.com/@vinay1996/prophet-f729877e7e5a
+
+\bibitem{c4}
+Taylor SJ, Letham B. 2017. Forecasting at scale. PeerJ Preprints 5:e3190v2 https://doi.org/10.7287/peerj.preprints.3190v2
+
+\bibitem{c5}
+P.Anand, M.Sharma, A.Sarolia, “Time Series Analysis for Predicting Anomaly using Prophet Models”, AIJR Abstracts, pp. 70–70, Feb. 2024
+
+\bibitem{c6}
+Facebook, Inc. (2024). 'Uncertainty Intervals — Prophet 0.7 documentation'. Available at: https://facebook.github.io/prophet/docs/uncertainty\_intervals.html (Accessed: 20 April 2024).
+
+\bibitem{c7}
+Meng, J., Yang, X., Yang, C., Liu, Y. (2021). Comparative Analysis of Prophet and LSTM Model. Journal of Physics: Conference Series, 1910(1): 12-59.
+
+
+\bibitem{c8}
+A.Sagheer, M.Kotb, Time series forecasting of petroleum production using deep LSTM recurrent networks, Neurocomputing, Volume 323, 2019, https://doi.org/10.1016/j.neucom.2018.09.082.
+
+
+\bibitem{c9}
+TRIEBE.O, HEWAMALAGE.H, PILYUGINA.P, et al. Neuralprophet: Explainable forecasting at scale. 2021. https://doi.org/10.48550/arXiv.2111.15397
+
+\bibitem{c10}
+JAGANNATHAN.J, DIVYA, C. Time Series Analyzation and Prediction of Climate using Enhanced Multivariate Prophet. International Journal of Engineering Trends and Technology, 2021.
+https://ijettjournal.org/archive/ijett-v69i10p212.
+
+\bibitem{c11}
+Ketkar, N. . Introduction to Keras. In: Deep Learning with Python. Apress, Berkeley, CA. 2017. https://doi.org/10.1007/978-1-4842-2766-4\_7
+
+\bibitem{c12}
+Chih-Hung Wu, Chian-Huei Wun and Hung-Ju Chou, "Using association rules for completing missing data," Fourth International Conference on Hybrid Intelligent Systems, Japan, 2004, pp. 236-241, doi: 10.1109/ICHIS.2004.91.
+}
+
+
+\end{thebibliography}
+\end{multicols}
+
+\end{document}
+

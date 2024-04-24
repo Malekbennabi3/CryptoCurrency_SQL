@@ -30,7 +30,21 @@ def sdate(s):
 
 
 # -----------------------------------------------------------------------------------------------------
+'''
+Symbols:
 
+BTC: btx_usd
+ADA: adausd
+DOT: dotusd
+GNOU: gnouusd
+SHIBA: shib_usd
+TONUSD:
+XRP:xrpusd
+SOL: solusd
+
+'''
+
+# ------------------------------------------------------------------------------------------------------
 
 # Database connection details
 dbname = "crypto"
@@ -44,7 +58,7 @@ conn = mysql.connector.connect(database=dbname, user=dbuser, password=dbpassword
 cur = conn.cursor()
 # REQUETES
 
-# Colonne (time        open       close        high         low        volume)
+# Colonnes (time        open       close        high         low        volume)
 
 # a) Get all data for a specific cryptocurrency
 symbol = "BTC"
@@ -83,6 +97,26 @@ price_changes = cur.fetchall()
 print("Date\tPrice")
 for row in price_changes:
     print(f"{row[0]}\t{row[1]}")
+
+
+def get_info(symbol):
+    date_query = "DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+    query = f"SELECT MAX(close) AS highest_price FROM {symbol} WHERE  time >= 157992453;"
+    cur.execute(query)
+    high_close = cur.fetchone()[0]  # Fetch the first row (single value)
+    print(f"Highest closing price for BTC in the last year: ")
+
+    # c) Calculate the average market capitalization for all cryptocurrencies on a specific date
+    date = "2024-04-09"
+    query = f"SELECT AVG(volume) AS vol FROM {symbol} WHERE time = 15478936584;"
+    cur.execute(query)
+    avg_capital = cur.fetchone()[0]
+    print(f"Average market capitalization on {sdate(15478936584)}:")
+
+    return high_close, avg_capital
+
+
+print(get_info('xrpusd'))
 
 # Close the connection
 cur.close()
